@@ -14,7 +14,7 @@
 \usepackage[hidelinks]{hyperref}
 
 \tcbuselibrary{skins,raster}
-\usetikzlibrary{positioning,matrix,fit,decorations.pathreplacing}
+\usetikzlibrary{positioning,matrix,fit,decorations.pathreplacing, calc}
 
 \graphicspath{{img/}}
 
@@ -281,7 +281,52 @@
 	% --------------- end router ---------------
 	
 
-
+	% --------------- start PIO2 ---------------
+	% host description
+	\node[host description, below=4cm of router-description] (router-description2) {%
+		\begin{tcolorbox}[
+			adjusted title=RIO,
+			host description box
+		]			
+			\ip{10.1.1.35}{subnet-home}
+		
+			\tcblower
+			
+			NA-9289
+		\end{tcolorbox}
+	};
+	\node[
+		below=0em of router-description2.south west,
+		anchor=north west
+	] (laptop-services2) {
+		\begin{tcboxedraster}[services raster]{services box}
+			\tcbox{\service{}{Generic IO}{}}
+		\end{tcboxedraster}
+	};
+	
+	% services
+	\node[
+		below=0em of router-description2.south west,
+		anchor=north west
+	] (router-services2) {
+	};
+	
+	% network interfaces
+	\node[anchor=north] at (router-services2.north east -| router-description2.east) (router-interface2) {
+		\begin{tcbitemize}[interfaces raster]
+			\tcbitem[remember as=router-eth1] eth0..1\hfill\faIcon{ethernet}
+		\end{tcbitemize}
+		
+	};
+	
+	% draw box around all parts defining a host
+	\begin{pgfonlayer}{hostboxes}
+		\node[
+			host box,
+			fit=(router-description2.center) (router-services2.south) (router-services2.west) (router-interface2.south)
+		] (router-host-box2) {};
+	\end{pgfonlayer}
+	% --------------- end router ---------------
 	
 
 	% --------------- start raspberrypi ---------------
@@ -314,7 +359,7 @@
 		anchor=north east
 	] (raspberrypi-services) {
 		\begin{tcboxedraster}[services raster]{services box}
-			\tcbox[enhanced, remember as=raspberrypi-pihole]{\service{}{PLCHandler}}
+			\tcbox[enhanced, remember as=raspberrypi-pihole]{\service{}{CORE}}
 		\end{tcboxedraster}
 	};
 
@@ -323,6 +368,7 @@
 	\node[anchor=north] at (raspberrypi-services.north west -| raspberrypi-description.west) (raspberrypi-interfaces) {
 		\begin{tcbitemize}[interfaces raster]
 			\tcbitem[remember as=raspberrypi-eth0] \faIcon{ethernet}\hfill eth0
+			\tcbitem[remember as=raspberrypi-eth1] \faIcon{ethernet}\hfill eth1
 		\end{tcbitemize}
 	};
 	
@@ -335,26 +381,20 @@
 	\end{pgfonlayer}
 	% --------------- end raspberrypi ---------------
 	
-	% --------------- start guest devices ---------------
-	\node[host description, below=4em of router-host-box.south, anchor=north, inner sep=0em] (guest-devices) {
-		\begin{tcboxedraster}[devices raster]{%
-			devices box,
-			title={Guest Devices\hspace{1em}\ip{10.1.1.2/18}{subnet-guest}},
-			remember as=guest-devices-raster}
-			\tcbox{Service laptop}
-		\end{tcboxedraster}
-	};
-	% --------------- end guest devices ---------------
+
 
 
 		
 
 	\begin{scope}[ethernet]
 		\draw[subnet-home] (raspberrypi-eth0.west) -- ++(-1,0) |- (router-eth0.east);
-		\draw[subnet-home] (guest-devices.east) -- ++(2,0) |- (router-eth0.east);
+		\draw[subnet-home] (raspberrypi-eth1.west) -- ++(-1,0) |- (router-eth1.east);	
 	\end{scope}
 
 	% --------------- end network connections ---------------
+
+	\draw[black,thick] ($(router-description.north west)+(-1,0.3)$)  rectangle node[above=5cm of router-description]{CAB-CORE-02
+	}($(router-description2.south east)+(1.5,-2)$);
 \end{tikzpicture}
 	
 \end{document}
